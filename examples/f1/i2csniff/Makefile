@@ -28,6 +28,8 @@
 
 TARGET	?= i2csniff
 
+BOARD ?= flip32
+
 DEBUG ?= GDB
 
 SERIAL_DEVICE ?= /dev/ttyUSB0
@@ -49,13 +51,14 @@ A2L=arm-none-eabi-addr2line
 #################################
 # Working directories
 #################################
-BREEZY_DIR = ../../../
+COMMON_DIR = ../../../
 ROOT		 = .
 SRC_DIR		 = $(ROOT)
-CMSIS_DIR	 = $(BREEZY_DIR)/Drivers/CMSIS
-HAL_DIR  	 = $(BREEZY_DIR)/Drivers/STM32F1xx_HAL_Driver
+CMSIS_DIR	 = $(COMMON_DIR)/Drivers/CMSIS
+HAL_DIR  	 = $(COMMON_DIR)/Drivers/STM32F1xx_HAL_Driver
 OBJECT_DIR	 = obj
 BIN_DIR		 = obj
+BOARD_DIR        = $(COMMON_DIR)/boards/$(BOARD)
 
 
 
@@ -84,15 +87,19 @@ HAL_SRC	 = $(HAL_PREFIX).c \
 	   $(HAL_PREFIX)_rcc_ex.c
 
 
+VPATH := $(VPATH):$(BOARD_DIR)
+BOARD_SRC = $(BOARD_DIR)/stm32f1xx_it.c
+
 
 CSOURCES =  $(CMSIS_SRC) \
 	    $(HAL_SRC) \
-	    $(ROOT)/stm32f1xx_it.c
+	    $(BOARD_SRC)
 
 CXXSOURCES = $(ROOT)/main.cpp
 
 INCLUDE_DIRS	 = $(SRC_DIR) \
-		   $(BREEZY_DIR) \
+		   $(COMMON_DIR) \
+		   $(BOARD_DIR) \
 		   $(HAL_DIR)/Inc \
 		   $(CMSIS_DIR)/Include \
 		   $(CMSIS_DIR)/Device/ST/STM32F1xx/Include
@@ -129,7 +136,7 @@ MCFLAGS= -mcpu=cortex-m3 -mthumb
 COMPILER_FLAGS = -fno-common -fdata-sections -ffunction-sections
 LINKER_FLAGS =
 DEFS=-DSTM32F103xB -D__CORTEX_M3 -DWORDS_STACK_SIZE=200 -DSTM32F10X_MD -DUSE_HAL_DRIVER
-CFLAGS=-c $(MCFLAGS) $(DEBUG) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(COMPILER_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c99
+CFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(COMPILER_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c99
 CXXFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(COMPILER_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c++11
 CXXFLAGS+=-U__STRICT_ANSI__
 LDSCRIPT=$(CMSIS_DIR)/Device/ST/STM32F1xx/Source/Templates/gcc/linker/STM32F103XB_FLASH.ld
