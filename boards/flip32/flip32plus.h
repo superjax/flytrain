@@ -84,7 +84,6 @@
 #define USART1_GPIO                      GPIOA
 #define USART1_TX_PIN                    GPIO_PIN_9
 #define USART1_RX_PIN                    GPIO_PIN_10
-#define USART1_IRQn                      USART1_IRQn
 
 
  //======================================================================================================
