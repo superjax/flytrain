@@ -35,33 +35,16 @@ int main(void)
     LED1.init(LED1_GPIO_PORT, LED1_PIN);
     LED2.init(LED2_GPIO_PORT, LED2_PIN);
 
+    // Toggle LED1 so they will alternate
+    LED1.toggle();
 
-//    GPIO_InitTypeDef GPIO_InitStruct;
-
-//    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
-//    GPIO_InitStruct.Pull  = GPIO_NOPULL;
-//    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-
-//    GPIO_InitStruct.Pin = LED1_PIN;
-//    HAL_GPIO_Init(LED1_GPIO_PORT, &GPIO_InitStruct);
-
-//    GPIO_InitStruct.Pin = LED2_PIN;
-//    HAL_GPIO_Init(LED2_GPIO_PORT, &GPIO_InitStruct);
 
     while (1)
     {
-//        micros();
-        LED1.on();
-        delay_us(100000);
-        LED1.off();
-        delay_us(900000);
-
-//      HAL_GPIO_TogglePin(LED2_GPIO_PORT, LED1_PIN);
-//      /* Insert delay 100 ms */
-//      HAL_Delay(100);
-//      HAL_GPIO_TogglePin(LED2_GPIO_PORT, LED2_PIN);
-//      /* Insert delay 100 ms */
-//      HAL_Delay(100);
+        LED1.toggle();
+        delay_ms(100);
+        LED2.toggle();
+        delay_us(100);
     }
 }
 

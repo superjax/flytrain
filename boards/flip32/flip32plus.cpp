@@ -1,5 +1,7 @@
 #include "flip32plus.h"
 
+static uint32_t num_ticks;
+
 void start_wall_clock(void)
 {
     RCC_ClkInitTypeDef clkinitstruct = {0};
@@ -50,28 +52,20 @@ void hardware_init()
 
 uint32_t millis()
 {
-    uint32_t out = HAL_GetTick();
+    uint32_t out = num_ticks;
     return out;
 }
 
 uint64_t micros()
 {
-    volatile uint64_t ticks = millis();
-    volatile uint64_t clock = HAL_RCC_GetHCLKFreq();
-    volatile uint64_t val = SysTick->VAL;
-    volatile uint64_t us_from_ms = ticks*1000;
-    volatile uint64_t val_backwards =  ((uint64_t)SysTick->VAL * 1000000) / HAL_RCC_GetHCLKFreq();
-    volatile uint64_t us_from_val = 1000 - ((uint64_t)SysTick->LOAD - SysTick->VAL) / HAL_RCC_GetHCLKFreq();
-    volatile uint64_t out = (uint64_t)(millis()) * 1000 + us_from_val;
+    static uint32_t clock_MHz = HAL_RCC_GetHCLKFreq()/1000000;
+    uint32_t ticks, cycles;
+    do {
+        ticks = num_ticks;
+        cycles = SysTick->LOAD - SysTick->VAL;
+    } while(ticks != num_ticks); // We might have had a SysTick interrupt while we were loading the tick registers.  If so, do it again
 
-    static uint64_t last = out;
-
-    if(out < last)
-        volatile int err = 0;
-    if(out - last > 15)
-        volatile int err = 1;
-    last = out;
-    return out;
+    return (uint64_t)ticks * 1000 + cycles/clock_MHz;
 }
 
 void delay_ms(uint32_t ms)
@@ -86,12 +80,17 @@ void delay_ms(uint32_t ms)
 void delay_us(uint64_t us)
 {
     uint64_t start_time = micros();
-    uint64_t now = micros();
-    while(now - start_time < us)
+    while(micros() - start_time < us)
     {
-        now = micros();
+        ;
     }
 }
+
+extern "C" void SysTick_Handler(void)
+{
+  num_ticks++;
+}
+
 
 #ifdef  USE_FULL_ASSERT
 
