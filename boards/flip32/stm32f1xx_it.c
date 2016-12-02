@@ -128,6 +128,11 @@ void SysTick_Handler(void);
 /*            Cortex-M3 Processor Exceptions Handlers                         */
 /******************************************************************************/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /**
   * @brief  This function handles NMI exception.
   * @param  None
@@ -225,6 +230,10 @@ void SysTick_Handler(void)
 {
   HAL_IncTick();
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 /******************************************************************************/
 /*                 STM32F1xx Peripherals Interrupt Handlers                   */

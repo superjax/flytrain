@@ -88,14 +88,16 @@ HAL_SRC	 = $(HAL_PREFIX).c \
 
 
 VPATH := $(VPATH):$(BOARD_DIR)
-BOARD_SRC = $(BOARD_DIR)/stm32f1xx_it.c
+BOARD_SRC = $(BOARD_DIR)/stm32f1xx_it.c \
 
 
 CSOURCES =  $(CMSIS_SRC) \
 	    $(HAL_SRC) \
 	    $(BOARD_SRC)
 
-CXXSOURCES = $(ROOT)/main.cpp
+CXXSOURCES = $(ROOT)/main.cpp \
+	     $(BOARD_DIR)/flip32plus.cpp \
+	     $(COMMON_DIR)/led.cpp
 
 INCLUDE_DIRS	 = $(SRC_DIR) \
 		   $(COMMON_DIR) \
@@ -122,7 +124,7 @@ TARGET_HEX=$(BIN_DIR)/$(TARGET).hex
 #################################
 ifeq ($(DEBUG), GDB)
 DEBUG_FLAGS = -ggdb3
-OPTIMIZE = -Og
+OPTIMIZE =
 else
 OPTIMIZE = -Os
 LTO_FLAGS = -flto -fuse-linker-plugin $(OPTIMIZE)

@@ -38,27 +38,32 @@
   ******************************************************************************
   */
 
-#ifdef __cplusplus
- extern "C" {
-#endif
+// HIGH-LEVEL DRIVER INCLUDES (C++)
+#include "led.h"
 
-#include "stm32f1xx_hal.h"
+//#ifdef __cplusplus
+//extern "C" {
+//#endif
 
-typedef enum
-{
-  LED1 = 0,
-  LED2 = 1,
+//#ifdef __cplusplus
+//}
+//#endif
 
-  LED_GREEN  = LED1,
-  LED_RED = LED2,
+//typedef enum
+//{
+//  LED1 = 0,
+//  LED2 = 1,
 
-} Led_TypeDef;
+//  LED_GREEN  = LED1,
+//  LED_RED = LED2,
 
-typedef enum
-{
-  COM1 = 0,
-  COM2 = 1
-} COM_TypeDef;
+//} Led_TypeDef;
+
+//typedef enum
+//{
+//  COM1 = 0,
+//  COM2 = 1
+//} COM_TypeDef;
 
 
  //=====================================================================================================
@@ -83,7 +88,7 @@ typedef enum
 #define LEDx_GPIO_CLK_DISABLE(__LED__)   (((__LED__) == LED1) ? LED1_GPIO_CLK_DISABLE() :\
                                           ((__LED__) == LED2) ? LED2_GPIO_CLK_DISABLE() : 0 )
 //=====================================================================================================
-// UART CONFIGURATION
+// USART CONFIGURATION
 #define COMn                             1
 
 #define EVAL_COM1                        USART1
@@ -122,9 +127,8 @@ typedef enum
 
 
 
-/**
-  * @brief  IO Expander Interrupt line on EXTI
-  */
+ //======================================================================================================
+ // OTHER
 #define IOE_IT_PIN                       GPIO_PIN_14
 #define IOE_IT_GPIO_PORT                 GPIOB
 #define IOE_IT_GPIO_CLK_ENABLE()         __HAL_RCC_GPIOB_CLK_ENABLE()
@@ -208,98 +212,24 @@ supply LSb is �1� (address 0011101b) else if SDO pad is connected to ground 
    conditions (interrupts routines ...). */
 #define EVAL_SPIx_TIMEOUT_MAX                   1000
 
-/**
-  * @}
-  */
+//========================================================================================
+// Functions
+void hardware_init(void);
+void start_wall_clock(void);
 
-/** @addtogroup STM3210C_EVAL_COMPONENT
-  * @{
-  */
+uint32_t millis(void);
+uint64_t micros(void);
+void delay_ms(uint32_t ms);
+void delay_us(uint64_t us);
 
-/*##################### LCD ###################################*/
-/* Chip Select macro definition */
-#define LCD_CS_LOW()       HAL_GPIO_WritePin(LCD_NCS_GPIO_PORT, LCD_NCS_PIN, GPIO_PIN_RESET)
-#define LCD_CS_HIGH()      HAL_GPIO_WritePin(LCD_NCS_GPIO_PORT, LCD_NCS_PIN, GPIO_PIN_SET)
-
-/**
-  * @brief  LCD Control Interface pins
-  */
-#define LCD_NCS_PIN                             GPIO_PIN_2        /* PB.02*/
-#define LCD_NCS_GPIO_PORT                       GPIOB
-#define LCD_NCS_GPIO_CLK_ENABLE()               __HAL_RCC_GPIOB_CLK_ENABLE()
-#define LCD_NCS_GPIO_CLK_DISABLE()              __HAL_RCC_GPIOB_CLK_DISABLE()
-
-/*##################### SD ###################################*/
-/* Chip Select macro definition */
-#define SD_CS_LOW()       HAL_GPIO_WritePin(SD_CS_GPIO_PORT, SD_CS_PIN, GPIO_PIN_RESET)
-#define SD_CS_HIGH()      HAL_GPIO_WritePin(SD_CS_GPIO_PORT, SD_CS_PIN, GPIO_PIN_SET)
-
-/**
-  * @brief  SD Control Interface pins
-  */
-#define SD_CS_PIN                               GPIO_PIN_4        /* PA.04*/
-#define SD_CS_GPIO_PORT                         GPIOA
-#define SD_CS_GPIO_CLK_ENABLE()                 __HAL_RCC_GPIOA_CLK_ENABLE()
-#define SD_CS_GPIO_CLK_DISABLE()                __HAL_RCC_GPIOA_CLK_DISABLE()
-
-/**
-  * @brief  SD Detect Interface pins
-  */
-#define SD_DETECT_PIN                           GPIO_PIN_0
-#define SD_DETECT_GPIO_PORT                     GPIOE
-#define SD_DETECT_GPIO_CLK_ENABLE()             __HAL_RCC_GPIOE_CLK_ENABLE()
-#define SD_DETECT_GPIO_CLK_DISABLE()            __HAL_RCC_GPIOE_CLK_DISABLE()
-#define SD_DETECT_EXTI_IRQn                     EXTI0_IRQn
-
-/*##################### AUDIO ##########################*/
-/**
-  * @brief  AUDIO I2C Interface pins
-  */
-#define AUDIO_I2C_ADDRESS                     0x94
+#include "stm32f1xx_hal.h"
 
 /**
   * @}
   */
 
 /**
-  * @}
-  */
-
-
-
-/** @addtogroup STM3210C_EVAL_Exported_Functions
-  * @{
-  */
-//uint32_t                BSP_GetVersion(void);
-//void                    BSP_LED_Init(Led_TypeDef Led);
-//void                    BSP_LED_On(Led_TypeDef Led);
-//void                    BSP_LED_Off(Led_TypeDef Led);
-//void                    BSP_LED_Toggle(Led_TypeDef Led);
-//void                    BSP_PB_Init(Button_TypeDef Button, ButtonMode_TypeDef Button_Mode);
-//uint32_t                BSP_PB_GetState(Button_TypeDef Button);
-#ifdef HAL_UART_MODULE_ENABLED
-void                    BSP_COM_Init(COM_TypeDef COM, UART_HandleTypeDef* huart);
-#endif /* HAL_UART_MODULE_ENABLED */
-#ifdef HAL_I2C_MODULE_ENABLED
-uint8_t                 BSP_JOY_Init(JOYMode_TypeDef Joy_Mode);
-JOYState_TypeDef        BSP_JOY_GetState(void);
-#endif /* HAL_I2C_MODULE_ENABLED */
-
-/**
-  * @}
-  */
-
-
-#ifdef __cplusplus
-}
-#endif
-
-/**
-  * @}
-  */
-
-/**
-  * @}
+  * @}_
   */
 
 /**
