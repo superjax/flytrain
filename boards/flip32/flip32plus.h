@@ -38,6 +38,8 @@
   ******************************************************************************
   */
 
+#include <stdint.h>
+
 // HIGH-LEVEL DRIVER INCLUDES (C++)
 #include "led.h"
 
@@ -73,58 +75,16 @@
 
 #define LED1_PIN                         GPIO_PIN_4             /* PB.04*/
 #define LED1_GPIO_PORT                   GPIOB
-#define LED1_GPIO_CLK_ENABLE()           __HAL_RCC_GPIOB_CLK_ENABLE()
-#define LED1_GPIO_CLK_DISABLE()          __HAL_RCC_GPIOB_CLK_DISABLE()
 
 #define LED2_PIN                         GPIO_PIN_3            /* PB.03*/
 #define LED2_GPIO_PORT                   GPIOB
-#define LED2_GPIO_CLK_ENABLE()           __HAL_RCC_GPIOB_CLK_ENABLE()
-#define LED2_GPIO_CLK_DISABLE()          __HAL_RCC_GPIOB_CLK_DISABLE()
 
-
-#define LEDx_GPIO_CLK_ENABLE(__LED__)    do { if ((__LED__) == LED1) LED1_GPIO_CLK_ENABLE(); else \
-                                              if ((__LED__) == LED2) LED2_GPIO_CLK_ENABLE();} while(0)
-
-#define LEDx_GPIO_CLK_DISABLE(__LED__)   (((__LED__) == LED1) ? LED1_GPIO_CLK_DISABLE() :\
-                                          ((__LED__) == LED2) ? LED2_GPIO_CLK_DISABLE() : 0 )
 //=====================================================================================================
 // USART CONFIGURATION
-#define COMn                             1
-
-#define EVAL_COM1                        USART1
-#define EVAL_COM1_CLK_ENABLE()           __HAL_RCC_USART2_CLK_ENABLE()
-#define EVAL_COM1_CLK_DISABLE()          __HAL_RCC_USART2_CLK_DISABLE()
-
-#define AFIOCOM1_CLK_ENABLE()            __HAL_RCC_AFIO_CLK_ENABLE()
-#define AFIOCOM1_CLK_DISABLE()           __HAL_RCC_AFIO_CLK_DISABLE()
-
-#define EVAL_COM1_TX_PIN                 GPIO_PIN_5             /* PD.05*/
-#define EVAL_COM1_TX_GPIO_PORT           GPIOD
-#define EVAL_COM1_TX_GPIO_CLK_ENABLE()   __HAL_RCC_GPIOD_CLK_ENABLE()
-#define EVAL_COM1_TX_GPIO_CLK_DISABLE()  __HAL_RCC_GPIOD_CLK_DISABLE()
-
-#define EVAL_COM1_RX_PIN                 GPIO_PIN_6             /* PD.06*/
-#define EVAL_COM1_RX_GPIO_PORT           GPIOD
-#define EVAL_COM1_RX_GPIO_CLK_ENABLE()   __HAL_RCC_GPIOD_CLK_ENABLE()
-#define EVAL_COM1_RX_GPIO_CLK_DISABLE()  __HAL_RCC_GPIOD_CLK_DISABLE()
-
-
-#define EVAL_COM1_IRQn                   USART1_IRQn
-
-#define COMx_CLK_ENABLE(__INDEX__)              do { if((__INDEX__) == COM1) EVAL_COM1_CLK_ENABLE();} while(0)
-#define COMx_CLK_DISABLE(__INDEX__)             (((__INDEX__) == COM1) ? EVAL_COM1_CLK_DISABLE() : 0)
-
-#define AFIOCOMx_CLK_ENABLE(__INDEX__)          do { if((__INDEX__) == COM1) AFIOCOM1_CLK_ENABLE();} while(0)
-#define AFIOCOMx_CLK_DISABLE(__INDEX__)         (((__INDEX__) == COM1) ? AFIOCOM1_CLK_DISABLE() : 0)
-
-#define AFIOCOMx_REMAP(__INDEX__)               (((__INDEX__) == COM1) ? (AFIO->MAPR |= (AFIO_MAPR_USART2_REMAP)) : 0)
-
-#define COMx_TX_GPIO_CLK_ENABLE(__INDEX__)      do { if((__INDEX__) == COM1) EVAL_COM1_TX_GPIO_CLK_ENABLE();} while(0)
-#define COMx_TX_GPIO_CLK_DISABLE(__INDEX__)     (((__INDEX__) == COM1) ? EVAL_COM1_TX_GPIO_CLK_DISABLE() : 0)
-
-#define COMx_RX_GPIO_CLK_ENABLE(__INDEX__)      do { if((__INDEX__) == COM1) EVAL_COM1_RX_GPIO_CLK_ENABLE();} while(0)
-#define COMx_RX_GPIO_CLK_DISABLE(__INDEX__)     (((__INDEX__) == COM1) ? EVAL_COM1_RX_GPIO_CLK_DISABLE() : 0)
-
+#define USART1_GPIO                      GPIOA
+#define USART1_TX_PIN                    GPIO_PIN_9
+#define USART1_RX_PIN                    GPIO_PIN_10
+#define USART1_IRQn                      USART1_IRQn
 
 
  //======================================================================================================

@@ -11,7 +11,6 @@ void start_wall_clock(void)
     oscinitstruct.OscillatorType        = RCC_OSCILLATORTYPE_HSE;
     oscinitstruct.HSEPredivValue        = RCC_HSE_PREDIV_DIV1;
     oscinitstruct.HSICalibrationValue   = RCC_HSICALIBRATION_DEFAULT;
-    oscinitstruct.HSIState              = RCC_HSI_OFF;
     oscinitstruct.HSEState              = RCC_HSE_ON;
     oscinitstruct.PLL.PLLSource         = RCC_PLLSOURCE_HSE;
     oscinitstruct.PLL.PLLMUL            = RCC_PLL_MUL16;
@@ -48,6 +47,16 @@ void hardware_init()
     // GPIOB for LEDs
     __HAL_RCC_GPIOB_CLK_ENABLE();
 
+    start_wall_clock();
+
+    LED1.init(LED1_GPIO_PORT, LED1_PIN);
+    LED2.init(LED2_GPIO_PORT, LED2_PIN);
+
+
+
+   // USART1 Initialization
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_USART1_CLK_ENABLE();
 }
 
 uint32_t millis()
