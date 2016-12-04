@@ -33,7 +33,12 @@ int main(void)
     // Initializes LEDs and starts the wall clock
     hardware_init();
 
-//    UART1.init(115200, MODE_INTERRUPT);
+    static DMA_HandleTypeDef hdma_tx;
+    static DMA_HandleTypeDef hdma_rx;
+
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_USART1_CLK_ENABLE();
+    __HAL_RCC_DMA1_CLK_ENABLE();
 
     // Configure UART GPIO
     GPIO_InitTypeDef GPIO_InitStruct;
@@ -46,45 +51,38 @@ int main(void)
     GPIO_InitStruct.Pin = USART1_RX_PIN;
     HAL_GPIO_Init(USART1_GPIO, &GPIO_InitStruct);
 
-    // Configure the DMA'
-    __HAL_RCC_USART1_CLK_ENABLE();
-    __HAL_RCC_DMA1_CLK_ENABLE();
+    hdma_tx.Instance = DMA1_Channel4;
+    hdma_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
+    hdma_tx.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_tx.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hdma_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    hdma_tx.Init.Mode = DMA_NORMAL;
+    hdma_tx.Init.Priority = DMA_PRIORITY_LOW;
 
-    DMA_HandleTypeDef DMA_Tx;
-    DMA_HandleTypeDef DMA_Rx;
+    HAL_DMA_Init(&hdma_tx);
+    __HAL_LINKDMA(&UartHandle, hdmatx, hdma_tx);
 
-    DMA_Tx.Instance = DMA1_Channel4;
-    DMA_Tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
-    DMA_Tx.Init.PeriphInc = DMA_PINC_DISABLE;
-    DMA_Tx.Init.MemInc = DMA_MINC_ENABLE;
-    DMA_Tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-    DMA_Tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
-    DMA_Tx.Init.Mode = DMA_NORMAL;
-    DMA_Tx.Init.Priority = DMA_PRIORITY_LOW;
-    HAL_DMA_Init(&DMA_Tx);
-    __HAL_LINKDMA(&UartHandle, hdmatx, DMA_Tx);
+    hdma_rx.Instance = DMA1_Channel5;
+    hdma_rx.Init.Direction = DMA_PERIPH_TO_MEMORY;
+    hdma_rx.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_rx.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_rx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hdma_rx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    hdma_rx.Init.Mode = DMA_NORMAL;
+    hdma_rx.Init.Priority = DMA_PRIORITY_HIGH;
 
-    DMA_Rx.Instance = DMA1_Channel5;
-    DMA_Rx.Init.Direction = DMA_PERIPH_TO_MEMORY;
-    DMA_Rx.Init.PeriphInc = DMA_PINC_DISABLE;
-    DMA_Rx.Init.MemInc = DMA_MINC_ENABLE;
-    DMA_Rx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-    DMA_Rx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
-    DMA_Rx.Init.Mode = DMA_NORMAL;
-    DMA_Rx.Init.Priority = DMA_PRIORITY_HIGH;
-    HAL_DMA_Init(&DMA_Rx);
-    __HAL_LINKDMA(&UartHandle, hdmarx, DMA_Rx);
+    HAL_DMA_Init(&hdma_rx);
+    __HAL_LINKDMA(&UartHandle, hdmarx, hdma_rx);
 
-    // Configure NVIC
     HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 0, 1);
     HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
 
-    HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 0, 1);
+    HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
 
     HAL_NVIC_SetPriority(USART1_IRQn, 0, 1);
     HAL_NVIC_EnableIRQ(USART1_IRQn);
-
 
     // Configure UART
     UartHandle.Instance        = USART1;;
@@ -96,13 +94,6 @@ int main(void)
     UartHandle.Init.HwFlowCtl  = UART_HWCONTROL_NONE;
     UartHandle.Init.Mode       = UART_MODE_TX_RX;
 
-
-
-
-    if(HAL_UART_DeInit(&UartHandle) != HAL_OK)
-    {
-      while(1);
-    }
     if(HAL_UART_Init(&UartHandle) != HAL_OK)
     {
       while(1);
@@ -114,15 +105,9 @@ int main(void)
 
     while (1)
     {
-        uint8_t test[12] = {'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '\n'};
-//        if(UART1.write(test, 12) != HAL_OK)
-//        {
-//            while(1);
-//        }
-        if(HAL_UART_Transmit_DMA(&UartHandle, test, 12) != HAL_OK)
-        {
+        char *test = "hello world\n";
+        if(HAL_UART_Transmit_DMA(&UartHandle, (uint8_t*)test, 12) != HAL_OK)
             while(1);
-        }
         LED1.toggle();
         delay_ms(100);
         LED2.toggle();
@@ -139,41 +124,51 @@ void USART1_IRQHandler(void)
     HAL_UART_IRQHandler(&UartHandle);
 }
 
-///**
-//  * @brief  Tx Transfer completed callback
-//  * @param  UartHandle: UART handle.
-//  * @note   This example shows a simple way to report end of IT Tx transfer, and
-//  *         you can add your own implementation.
-//  * @retval None
-//  */
-//void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
-//{
+void DMA1_Channel4_IRQHandler(void)
+{
+    HAL_DMA_IRQHandler(UartHandle.hdmatx);
+}
 
-//}
+void DMA1_Channel5_IRQHandler(void)
+{
+    HAL_DMA_IRQHandler(UartHandle.hdmarx);
+}
 
-///**
-//  * @brief  Rx Transfer completed callback
-//  * @param  UartHandle: UART handle
-//  * @note   This example shows a simple way to report end of IT Rx transfer, and
-//  *         you can add your own implementation.
-//  * @retval None
-//  */
-//void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-//{
+/**
+  * @brief  Tx Transfer completed callback
+  * @param  UartHandle: UART handle.
+  * @note   This example shows a simple way to report end of IT Tx transfer, and
+  *         you can add your own implementation.
+  * @retval None
+  */
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
 
-//}
+}
 
-///**
-//  * @brief  UART error callbacks
-//  * @param  UartHandle: UART handle
-//  * @note   This example shows a simple way to report transfer error, and you can
-//  *         add your own implementation.
-//  * @retval None
-//  */
-//void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
-//{
-//    while(1);
-//}
+/**
+  * @brief  Rx Transfer completed callback
+  * @param  UartHandle: UART handle
+  * @note   This example shows a simple way to report end of IT Rx transfer, and
+  *         you can add your own implementation.
+  * @retval None
+  */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+
+}
+
+/**
+  * @brief  UART error callbacks
+  * @param  UartHandle: UART handle
+  * @note   This example shows a simple way to report transfer error, and you can
+  *         add your own implementation.
+  * @retval None
+  */
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+    while(1);
+}
 
 }
 
