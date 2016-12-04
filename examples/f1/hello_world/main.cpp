@@ -32,7 +32,7 @@ int main(void)
     hardware_init();
 
     SerialPort uart1(1);
-    uart1.init(921600, MODE_DMA);
+    uart1.init(921600, MODE_INTERRUPT);
 
     // Toggle LED1 so they will alternate
     LED1.toggle();
@@ -40,8 +40,10 @@ int main(void)
 
     while (1)
     {
-        char *test = "hello world\n";
-        uart1.write((uint8_t*)test, 12);
+        char* test1 = "hello ";
+        char* test2 = "world\n";
+        uart1.write((uint8_t*)test1, 6);
+        uart1.write((uint8_t*)test2, 6);
         LED1.toggle();
         delay_ms(100);
         LED2.toggle();

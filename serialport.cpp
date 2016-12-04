@@ -10,6 +10,9 @@ SerialPort::SerialPort(int index)
     rxCompleteCB_ = NULL;
     errorCB_ = NULL;
 
+    rx_buffer_head_ = rx_buffer_tail_ = 0;
+    tx_buffer_head_ = tx_buffer_tail_ = 0;
+
     // Initialze RCC stuff
     if(index == 1)
     {
@@ -143,18 +146,72 @@ void SerialPort::init(uint32_t baudrate, uint8_t mode)
 
 HAL_StatusTypeDef SerialPort::write(uint8_t *buffer, uint32_t len)
 {
+
     if(mode_ == MODE_POLLING)
     {
+        // There is no circular buffer for the polling mode, so just return
+        while(HAL_UART_GetState(&UartHandle_) != HAL_UART_STATE_READY)
+        {
+            ; // wait for the UART to become ready
+        }
         return HAL_UART_Transmit(&UartHandle_, buffer, len, 0xFFFF);
     }
-    else if(mode_ == MODE_INTERRUPT)
+
+    // Put data on the circular buffer (move the head as you do it)
+    for(int i = 0; i < len; i++)
     {
-        return HAL_UART_Transmit_IT(&UartHandle_, buffer, len);
+        tx_buffer_[tx_buffer_head_] = buffer[i];
+        tx_buffer_head_ = (tx_buffer_head_ + 1) % UART_BUFFER_SIZE;
     }
-    else if(mode_ == MODE_DMA)
+
+    // If we are ready to send more data (the UART TX line was idle)
+    if(!(HAL_UART_GetState(&UartHandle_) & HAL_UART_STATE_BUSY_TX ))
     {
-        return HAL_UART_Transmit_DMA(&UartHandle_, buffer, len);
+        // Figure out the data to send
+        uint8_t* buffer_to_send = &tx_buffer_[tx_buffer_tail_];
+        uint32_t number_of_bytes = 0;
+        if(tx_buffer_tail_ < tx_buffer_head_)
+        {
+            // this is the easy case, the bytes are all contiguous, so we can just send them all at once
+            number_of_bytes = tx_buffer_head_ - tx_buffer_tail_;
+            tx_buffer_tail_ = tx_buffer_head_;
+        }
+        else
+        {
+            // we have to send in two parts.  First the part to the end of the buffer, then the rest
+            // will get sent on the complete callback
+            number_of_bytes = UART_BUFFER_SIZE - tx_buffer_tail_;
+            tx_buffer_tail_ = 0;
+        }
+
+        if(mode_ == MODE_INTERRUPT)
+        {
+            return HAL_UART_Transmit_IT(&UartHandle_, buffer_to_send, number_of_bytes);
+        }
+        else if(mode_ == MODE_DMA)
+        {
+            return HAL_UART_Transmit_DMA(&UartHandle_, buffer_to_send, number_of_bytes);
+        }
     }
+    else
+    {
+        volatile int debug = 1;
+    }
+}
+
+HAL_StatusTypeDef SerialPort::read(uint8_t *buffer, uint32_t len)
+{
+    return HAL_UART_Receive(&UartHandle_, buffer, len, 0x1FFFF);
+}
+
+bool SerialPort::busy()
+{
+    HAL_UART_StateTypeDef current_state =  HAL_UART_GetState(&UartHandle_);
+    if(current_state & HAL_UART_STATE_BUSY_RX)
+    {
+        return true;
+    }
+    return false;
 }
 
 void SerialPort::rx_complete_CB()
@@ -165,7 +222,36 @@ void SerialPort::rx_complete_CB()
 
 void SerialPort::tx_complete_CB()
 {
-    if(txCompleteCB_ != NULL)
+    // Check to make sure there isn't more data to send from the buffer
+    if(tx_buffer_head_ != tx_buffer_tail_)
+    {
+        // Figure out the data to send
+        uint8_t* buffer_to_send = &tx_buffer_[tx_buffer_tail_];
+        uint32_t number_of_bytes = 0;
+        if(tx_buffer_tail_ < tx_buffer_head_)
+        {
+            // this is the easy case, the bytes are all contiguous, so we can just send them all at once
+            number_of_bytes = tx_buffer_head_ - tx_buffer_tail_;
+            tx_buffer_tail_ = tx_buffer_head_;
+        }
+        else
+        {
+            // we have to send in two parts.  First the part to the end of the buffer, then the rest
+            // will get sent on the complete callback
+            number_of_bytes = UART_BUFFER_SIZE - tx_buffer_tail_;
+            tx_buffer_tail_ = 0;
+        }
+
+        if(mode_ == MODE_INTERRUPT)
+        {
+            HAL_UART_Transmit_IT(&UartHandle_, buffer_to_send, number_of_bytes);
+        }
+        else if(mode_ == MODE_DMA)
+        {
+            HAL_UART_Transmit_DMA(&UartHandle_, buffer_to_send, number_of_bytes);
+        }
+    }
+    else if(txCompleteCB_ != NULL)
         txCompleteCB_();
 }
 
