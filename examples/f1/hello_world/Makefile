@@ -98,7 +98,8 @@ CSOURCES =  $(CMSIS_SRC) \
 
 CXXSOURCES = $(ROOT)/main.cpp \
 	     $(BOARD_DIR)/flip32plus.cpp \
-	     $(COMMON_DIR)/led.cpp
+             $(COMMON_DIR)/led.cpp \
+             $(COMMON_DIR)/serialport.cpp
 
 INCLUDE_DIRS	 = $(SRC_DIR) \
 		   $(COMMON_DIR) \

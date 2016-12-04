@@ -42,6 +42,7 @@
 
 // HIGH-LEVEL DRIVER INCLUDES (C++)
 #include "led.h"
+#include "serialport.h"
 
 //#ifdef __cplusplus
 //extern "C" {
@@ -84,6 +85,21 @@
 #define USART1_GPIO                      GPIOA
 #define USART1_TX_PIN                    GPIO_PIN_9
 #define USART1_RX_PIN                    GPIO_PIN_10
+#define TURN_ON_USART1()                  __HAL_RCC_GPIOA_CLK_ENABLE(); \
+                                        __HAL_RCC_USART1_CLK_ENABLE()
+
+#define USART2_GPIO                     GPIOA
+#define USART2_TX_PIN                   GPIO_PIN_2
+#define USART2_RX_PIN                   GPIO_PIN_3
+#define TURN_ON_USART2()                  __HAL_RCC_GPIOA_CLK_ENABLE(); \
+                                        __HAL_RCC_USART2_CLK_ENABLE()
+
+#define USART3_GPIO                     GPIOB
+#define USART3_TX_PIN                   GPIO_PIN_10
+#define USART3_RX_PIN                   GPIO_PIN_11
+#define TURN_ON_USART3()                  __HAL_RCC_GPIOB_CLK_ENABLE(); \
+                                        __HAL_RCC_USART3_CLK_ENABLE()
+
 
 
  //======================================================================================================

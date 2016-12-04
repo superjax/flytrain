@@ -33,36 +33,40 @@ int main(void)
     // Initializes LEDs and starts the wall clock
     hardware_init();
 
-    // Configure UART GPIO
-    GPIO_InitTypeDef GPIO_InitStruct;
-    GPIO_InitStruct.Pin       = USART1_TX_PIN;
-    GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull      = GPIO_PULLUP;
-    GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_HIGH;
-    HAL_GPIO_Init(USART1_GPIO, &GPIO_InitStruct);
-
-    GPIO_InitStruct.Pin = USART1_RX_PIN;
-    HAL_GPIO_Init(USART1_GPIO, &GPIO_InitStruct);
-
-    // Configure UART
-    UartHandle.Instance        = USART1;;
-
-    UartHandle.Init.BaudRate   = 9600;
-    UartHandle.Init.WordLength = UART_WORDLENGTH_8B;
-    UartHandle.Init.StopBits   = UART_STOPBITS_1;
-    UartHandle.Init.Parity     = UART_PARITY_NONE;
-    UartHandle.Init.HwFlowCtl  = UART_HWCONTROL_NONE;
-    UartHandle.Init.Mode       = UART_MODE_TX_RX;
+    SerialPort serial;
+    serial.init(USART1, 115200, MODE_POLLING);
 
 
-    if(HAL_UART_DeInit(&UartHandle) != HAL_OK)
-    {
-      while(1);
-    }
-    if(HAL_UART_Init(&UartHandle) != HAL_OK)
-    {
-      while(1);
-    }
+//    // Configure UART GPIO
+//    GPIO_InitTypeDef GPIO_InitStruct;
+//    GPIO_InitStruct.Pin       = USART1_TX_PIN;
+//    GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
+//    GPIO_InitStruct.Pull      = GPIO_PULLUP;
+//    GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_HIGH;
+//    HAL_GPIO_Init(USART1_GPIO, &GPIO_InitStruct);
+
+//    GPIO_InitStruct.Pin = USART1_RX_PIN;
+//    HAL_GPIO_Init(USART1_GPIO, &GPIO_InitStruct);
+
+//    // Configure UART
+//    UartHandle.Instance        = USART1;;
+
+//    UartHandle.Init.BaudRate   = 9600;
+//    UartHandle.Init.WordLength = UART_WORDLENGTH_8B;
+//    UartHandle.Init.StopBits   = UART_STOPBITS_1;
+//    UartHandle.Init.Parity     = UART_PARITY_NONE;
+//    UartHandle.Init.HwFlowCtl  = UART_HWCONTROL_NONE;
+//    UartHandle.Init.Mode       = UART_MODE_TX_RX;
+
+
+//    if(HAL_UART_DeInit(&UartHandle) != HAL_OK)
+//    {
+//      while(1);
+//    }
+//    if(HAL_UART_Init(&UartHandle) != HAL_OK)
+//    {
+//      while(1);
+//    }
 
     // Toggle LED1 so they will alternate
     LED1.toggle();
@@ -71,8 +75,10 @@ int main(void)
     while (1)
     {
         uint8_t test[5] = {'t', 'e', 's', 't', '\n'};
-        if(HAL_UART_Transmit_IT(&UartHandle, test, 5) != HAL_OK)
+        if(serial.write(test, 5) != HAL_OK)
+        {
             while(1);
+        }
         LED1.toggle();
         delay_ms(100);
         LED2.toggle();
