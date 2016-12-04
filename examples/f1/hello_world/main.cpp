@@ -33,7 +33,7 @@ int main(void)
     // Initializes LEDs and starts the wall clock
     hardware_init();
 
-    UART1.init(115200, MODE_POLLING);
+    UART1.init(115200, MODE_INTERRUPT);
 
 
 //    // Configure UART GPIO
@@ -73,8 +73,8 @@ int main(void)
 
     while (1)
     {
-        uint8_t test[5] = {'t', 'e', 's', 't', '\n'};
-        if(UART1.write(test, 5) != HAL_OK)
+        uint8_t test[12] = {'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '\n'};
+        if(UART1.write(test, 12) != HAL_OK)
         {
             while(1);
         }
