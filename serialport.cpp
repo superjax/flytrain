@@ -1,6 +1,8 @@
 #include "serialport.h"
 
-SerialPort UART1(1), UART2(2), UART3(3);
+SerialPort* UART1Ptr = NULL;
+SerialPort* UART2Ptr = NULL;
+SerialPort* UART3Ptr = NULL;
 
 SerialPort::SerialPort(int index)
 {
@@ -13,28 +15,46 @@ SerialPort::SerialPort(int index)
     {
         hardware_ = USART1;
         TURN_ON_USART1();
+        TURN_ON_USART1_DMA();
         GPIO_ = USART1_GPIO;
         rx_pin_ = USART1_RX_PIN;
         tx_pin_ = USART1_TX_PIN;
-        IRQn_ = USART1_IRQn;
+        UART_IRQn_ = USART1_IRQn;
+        Rx_DMA_IRQn_ = USART1_DMA_RX_IRQn;
+        Tx_DMA_IRQn_ = USART1_DMA_TX_IRQn;
+        Rx_DMA_Channel_ = USART1_DMA_RX;
+        Tx_DMA_Channel_ = USART1_DMA_TX;
+        UART1Ptr = this;
     }
     else if(index == 2)
     {
         hardware_ = USART2;
         TURN_ON_USART2();
+        TURN_ON_USART2_DMA();
         GPIO_ = USART2_GPIO;
         rx_pin_ = USART2_RX_PIN;
         tx_pin_ = USART2_TX_PIN;
-        IRQn_ = USART2_IRQn;
+        UART_IRQn_ = USART2_IRQn;
+        Rx_DMA_IRQn_ = USART2_DMA_RX_IRQn;
+        Tx_DMA_IRQn_ = USART2_DMA_TX_IRQn;
+        Rx_DMA_Channel_ = USART2_DMA_RX;
+        Tx_DMA_Channel_ = USART2_DMA_TX;
+        UART2Ptr = this;
     }
     else if(index == 3)
     {
         hardware_ = USART3;
         TURN_ON_USART3();
+        TURN_ON_USART3_DMA();
         GPIO_ = USART3_GPIO;
         rx_pin_ = USART3_RX_PIN;
         tx_pin_ = USART3_TX_PIN;
-        IRQn_ = USART3_IRQn;
+        UART_IRQn_ = USART3_IRQn;
+        Rx_DMA_IRQn_ = USART3_DMA_RX_IRQn;
+        Tx_DMA_IRQn_ = USART3_DMA_TX_IRQn;
+        Rx_DMA_Channel_ = USART3_DMA_RX;
+        Tx_DMA_Channel_ = USART3_DMA_TX;
+        UART3Ptr = this;
     }
 }
 
@@ -55,7 +75,58 @@ void SerialPort::init(uint32_t baudrate, uint8_t mode)
     GPIO_InitStruct.Pin = rx_pin_;
     HAL_GPIO_Init(GPIO_, &GPIO_InitStruct);
 
-    // Configure Uart Hardware
+    // Configure DMA Channels
+    static DMA_HandleTypeDef hdma_tx;
+    static DMA_HandleTypeDef hdma_rx;
+    if(mode_ == MODE_DMA)
+    {
+        // Tx DMA
+        hdma_tx.Instance = Tx_DMA_Channel_;
+        hdma_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
+        hdma_tx.Init.PeriphInc = DMA_PINC_DISABLE;
+        hdma_tx.Init.MemInc = DMA_MINC_ENABLE;
+        hdma_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+        hdma_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+        hdma_tx.Init.Mode = DMA_NORMAL;
+        hdma_tx.Init.Priority = DMA_PRIORITY_LOW;
+
+        HAL_DMA_Init(&hdma_tx);
+        __HAL_LINKDMA(&UartHandle_, hdmatx, hdma_tx);
+
+        // RX DMA
+        hdma_rx.Instance = Rx_DMA_Channel_;
+        hdma_rx.Init.Direction = DMA_PERIPH_TO_MEMORY;
+        hdma_rx.Init.PeriphInc = DMA_PINC_DISABLE;
+        hdma_rx.Init.MemInc = DMA_MINC_ENABLE;
+        hdma_rx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+        hdma_rx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+        hdma_rx.Init.Mode = DMA_NORMAL;
+        hdma_rx.Init.Priority = DMA_PRIORITY_HIGH;
+
+        HAL_DMA_Init(&hdma_rx);
+        __HAL_LINKDMA(&UartHandle_, hdmarx, hdma_rx);
+
+        // Set up the DMA Interrupts
+        HAL_NVIC_SetPriority(Rx_DMA_IRQn_, 0, 1);
+        HAL_NVIC_EnableIRQ(Rx_DMA_IRQn_);
+
+        HAL_NVIC_SetPriority(Tx_DMA_IRQn_, 0, 0);
+        HAL_NVIC_EnableIRQ(Tx_DMA_IRQn_);
+
+        // Set up UART interrupts
+        HAL_NVIC_SetPriority(UART_IRQn_, 0, 1);
+        HAL_NVIC_EnableIRQ(UART_IRQn_);
+    }
+
+    // Configure the Interrupts
+    if(mode_ == MODE_INTERRUPT)
+    {
+        // Set Up NVIC for USART interrupts
+        HAL_NVIC_SetPriority(UART_IRQn_, 0, 1);
+        HAL_NVIC_EnableIRQ(UART_IRQn_);
+    }
+
+    // Configure UART Hardware
     UartHandle_.Instance = hardware_;
     UartHandle_.Init.BaudRate = baudrate_;
     UartHandle_.Init.WordLength = UART_WORDLENGTH_8B;
@@ -64,20 +135,9 @@ void SerialPort::init(uint32_t baudrate, uint8_t mode)
     UartHandle_.Init.HwFlowCtl = UART_HWCONTROL_NONE;
     UartHandle_.Init.Mode = UART_MODE_TX_RX;
 
-    if(HAL_UART_DeInit(&UartHandle_) != HAL_OK)
-    {
-        error_CB();
-    }
     if(HAL_UART_Init(&UartHandle_) != HAL_OK)
     {
         error_CB();
-    }
-
-    if(mode_ == MODE_INTERRUPT)
-    {
-        // Set Up NVIC for USART interrupts
-        HAL_NVIC_SetPriority(IRQn_, 0, 1);
-        HAL_NVIC_EnableIRQ(IRQn_);
     }
 }
 
@@ -90,6 +150,10 @@ HAL_StatusTypeDef SerialPort::write(uint8_t *buffer, uint32_t len)
     else if(mode_ == MODE_INTERRUPT)
     {
         return HAL_UART_Transmit_IT(&UartHandle_, buffer, len);
+    }
+    else if(mode_ == MODE_DMA)
+    {
+        return HAL_UART_Transmit_DMA(&UartHandle_, buffer, len);
     }
 }
 
@@ -121,47 +185,47 @@ void SerialPort::error_CB()
 // class callback member
 void tx_complete_IRQ(UART_HandleTypeDef* huart)
 {
-    if(huart == &UART1.UartHandle_)
+    if(huart == &UART1Ptr->UartHandle_)
     {
-        UART1.tx_complete_CB();
+        UART1Ptr->tx_complete_CB();
     }
-    else if(huart == &UART2.UartHandle_)
+    else if(huart == &UART2Ptr->UartHandle_)
     {
-        UART2.tx_complete_CB();
+        UART2Ptr->tx_complete_CB();
     }
-    else if(huart == &UART3.UartHandle_)
+    else if(huart == &UART3Ptr->UartHandle_)
     {
-        UART3.tx_complete_CB();
+        UART3Ptr->tx_complete_CB();
     }
 }
 void rx_complete_IRQ(UART_HandleTypeDef* huart)
 {
-    if(huart == &UART1.UartHandle_)
+    if(huart == &UART1Ptr->UartHandle_)
     {
-        UART1.rx_complete_CB();
+        UART1Ptr->rx_complete_CB();
     }
-    else if(huart == &UART2.UartHandle_)
+    else if(huart == &UART2Ptr->UartHandle_)
     {
-        UART2.rx_complete_CB();
+        UART2Ptr->rx_complete_CB();
     }
-    else if(huart == &UART3.UartHandle_)
+    else if(huart == &UART3Ptr->UartHandle_)
     {
-        UART3.rx_complete_CB();
+        UART3Ptr->rx_complete_CB();
     }
 }
 void error_IRQ(UART_HandleTypeDef* huart)
 {
-    if(huart == &UART1.UartHandle_)
+    if(huart == &UART1Ptr->UartHandle_)
     {
-        UART1.error_CB();
+        UART1Ptr->error_CB();
     }
-    else if(huart == &UART2.UartHandle_)
+    else if(huart == &UART2Ptr->UartHandle_)
     {
-        UART2.error_CB();
+        UART2Ptr->error_CB();
     }
-    else if(huart == &UART3.UartHandle_)
+    else if(huart == &UART3Ptr->UartHandle_)
     {
-        UART3.error_CB();
+        UART3Ptr->error_CB();
     }
 }
 
@@ -173,15 +237,39 @@ extern "C"
 
 void USART1_IRQHandler(void)
 {
-    HAL_UART_IRQHandler(&UART1.UartHandle_);
+    HAL_UART_IRQHandler(&UART1Ptr->UartHandle_);
 }
 void USART2_IRQHandler(void)
 {
-    HAL_UART_IRQHandler(&UART2.UartHandle_);
+    HAL_UART_IRQHandler(&UART2Ptr->UartHandle_);
 }
 void USART3_IRQHandler(void)
 {
-    HAL_UART_IRQHandler(&UART3.UartHandle_);
+    HAL_UART_IRQHandler(&UART3Ptr->UartHandle_);
+}
+void DMA1_Channel2_IRQHandler(void)
+{
+    HAL_DMA_IRQHandler(UART3Ptr->UartHandle_.hdmarx);
+}
+void DMA1_Channel3_IRQHandler(void)
+{
+    HAL_DMA_IRQHandler(UART3Ptr->UartHandle_.hdmatx);
+}
+void DMA1_Channel4_IRQHandler(void)
+{
+    HAL_DMA_IRQHandler(UART1Ptr->UartHandle_.hdmatx);
+}
+void DMA1_Channel5_IRQHandler(void)
+{
+    HAL_DMA_IRQHandler(UART1Ptr->UartHandle_.hdmarx);
+}
+void DMA1_Channel6_IRQHandler(void)
+{
+    HAL_DMA_IRQHandler(UART2Ptr->UartHandle_.hdmatx);
+}
+void DMA1_Channel7_IRQHandler(void)
+{
+    HAL_DMA_IRQHandler(UART2Ptr->UartHandle_.hdmarx);
 }
 
 /**

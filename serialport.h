@@ -6,7 +6,8 @@
 enum
 {
     MODE_POLLING,
-    MODE_INTERRUPT
+    MODE_INTERRUPT,
+    MODE_DMA
 };
 
 class SerialPort
@@ -33,15 +34,19 @@ private:
     uint16_t tx_pin_;
     uint8_t mode_;
     uint32_t baudrate_;
-    IRQn_Type IRQn_;
+    IRQn_Type UART_IRQn_;
+    IRQn_Type Tx_DMA_IRQn_;
+    IRQn_Type Rx_DMA_IRQn_;
+    DMA_Channel_TypeDef* Tx_DMA_Channel_;
+    DMA_Channel_TypeDef* Rx_DMA_Channel_;
 
     void (*txCompleteCB_)(void);
     void (*rxCompleteCB_)(void);
     void (*errorCB_)(void);
 };
 
-extern SerialPort UART1;
-extern SerialPort UART2;
-extern SerialPort UART2;
+extern SerialPort* UART1Ptr;
+extern SerialPort* UART2Ptr;
+extern SerialPort* UART2Ptr;
 
 #endif // SERIALPORT_H

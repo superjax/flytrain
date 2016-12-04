@@ -103,19 +103,34 @@
 #define USART1_GPIO                      GPIOA
 #define USART1_TX_PIN                    GPIO_PIN_9
 #define USART1_RX_PIN                    GPIO_PIN_10
-#define TURN_ON_USART1()                  __HAL_RCC_GPIOA_CLK_ENABLE(); \
-                                        __HAL_RCC_USART1_CLK_ENABLE()
+#define USART1_DMA_RX                    DMA1_Channel5;
+#define USART1_DMA_TX                    DMA1_Channel4;
+#define USART1_DMA_RX_IRQn               DMA1_Channel5_IRQn;
+#define USART1_DMA_TX_IRQn               DMA1_Channel4_IRQn;
+#define TURN_ON_USART1_DMA()            __HAL_RCC_DMA1_CLK_ENABLE();
+#define TURN_ON_USART1()                 __HAL_RCC_GPIOA_CLK_ENABLE(); \
+                                         __HAL_RCC_USART1_CLK_ENABLE()
 
 #define USART2_GPIO                     GPIOA
 #define USART2_TX_PIN                   GPIO_PIN_2
 #define USART2_RX_PIN                   GPIO_PIN_3
-#define TURN_ON_USART2()                  __HAL_RCC_GPIOA_CLK_ENABLE(); \
+#define USART2_DMA_RX                   DMA1_Channel6;
+#define USART2_DMA_TX                   DMA1_Channel7;
+#define USART2_DMA_RX_IRQn              DMA1_Channel6_IRQn;
+#define USART2_DMA_TX_IRQn              DMA1_Channel7_IRQn;
+#define TURN_ON_USART2_DMA()            __HAL_RCC_DMA1_CLK_ENABLE();
+#define TURN_ON_USART2()                __HAL_RCC_GPIOA_CLK_ENABLE(); \
                                         __HAL_RCC_USART2_CLK_ENABLE()
 
 #define USART3_GPIO                     GPIOB
 #define USART3_TX_PIN                   GPIO_PIN_10
 #define USART3_RX_PIN                   GPIO_PIN_11
-#define TURN_ON_USART3()                  __HAL_RCC_GPIOB_CLK_ENABLE(); \
+#define USART3_DMA_RX                   DMA1_Channel3;
+#define USART3_DMA_TX                   DMA1_Channel2;
+#define USART3_DMA_RX_IRQn              DMA1_Channel3_IRQn;
+#define USART3_DMA_TX_IRQn              DMA1_Channel2_IRQn;
+#define TURN_ON_USART3_DMA()            __HAL_RCC_DMA1_CLK_ENABLE();
+#define TURN_ON_USART3()                __HAL_RCC_GPIOB_CLK_ENABLE(); \
                                         __HAL_RCC_USART3_CLK_ENABLE()
 
 
