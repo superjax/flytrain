@@ -12,16 +12,21 @@ enum
 class SerialPort
 {
 public:
-    SerialPort();
-    void init(USART_TypeDef* hardware, uint32_t baudrate, uint8_t mode);
+    SerialPort(int index);
+    void init(uint32_t baudrate, uint8_t mode);
     HAL_StatusTypeDef write(uint8_t* buffer, uint32_t len);
 
     void register_tx_complete_CB(void);
     void register_rx_complete_CB(void);
     void register_error_CB(void);
 
-private:
     UART_HandleTypeDef UartHandle_;
+
+    void tx_complete_CB(void);
+    void rx_complete_CB(void);
+    void error_CB(void);
+
+private:
     USART_TypeDef* hardware_;
     GPIO_TypeDef* GPIO_;
     uint16_t rx_pin_;
@@ -32,7 +37,11 @@ private:
 
     void (*txCompleteCB_)(void);
     void (*rxCompleteCB_)(void);
-    void (*errorCB)(void);
+    void (*errorCB_)(void);
 };
+
+extern SerialPort UART1;
+extern SerialPort UART2;
+extern SerialPort UART2;
 
 #endif // SERIALPORT_H

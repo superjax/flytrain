@@ -33,8 +33,7 @@ int main(void)
     // Initializes LEDs and starts the wall clock
     hardware_init();
 
-    SerialPort serial;
-    serial.init(USART1, 115200, MODE_POLLING);
+    UART1.init(115200, MODE_POLLING);
 
 
 //    // Configure UART GPIO
@@ -75,7 +74,7 @@ int main(void)
     while (1)
     {
         uint8_t test[5] = {'t', 'e', 's', 't', '\n'};
-        if(serial.write(test, 5) != HAL_OK)
+        if(UART1.write(test, 5) != HAL_OK)
         {
             while(1);
         }
@@ -90,46 +89,46 @@ int main(void)
 extern "C"
 {
 
-void USART1_IRQHandler(void)
-{
-    HAL_UART_IRQHandler(&UartHandle);
-}
+//void USART1_IRQHandler(void)
+//{
+//    HAL_UART_IRQHandler(&UartHandle);
+//}
 
-/**
-  * @brief  Tx Transfer completed callback
-  * @param  UartHandle: UART handle.
-  * @note   This example shows a simple way to report end of IT Tx transfer, and
-  *         you can add your own implementation.
-  * @retval None
-  */
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
-{
+///**
+//  * @brief  Tx Transfer completed callback
+//  * @param  UartHandle: UART handle.
+//  * @note   This example shows a simple way to report end of IT Tx transfer, and
+//  *         you can add your own implementation.
+//  * @retval None
+//  */
+//void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+//{
 
-}
+//}
 
-/**
-  * @brief  Rx Transfer completed callback
-  * @param  UartHandle: UART handle
-  * @note   This example shows a simple way to report end of IT Rx transfer, and
-  *         you can add your own implementation.
-  * @retval None
-  */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
+///**
+//  * @brief  Rx Transfer completed callback
+//  * @param  UartHandle: UART handle
+//  * @note   This example shows a simple way to report end of IT Rx transfer, and
+//  *         you can add your own implementation.
+//  * @retval None
+//  */
+//void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+//{
 
-}
+//}
 
-/**
-  * @brief  UART error callbacks
-  * @param  UartHandle: UART handle
-  * @note   This example shows a simple way to report transfer error, and you can
-  *         add your own implementation.
-  * @retval None
-  */
-void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
-{
-    while(1);
-}
+///**
+//  * @brief  UART error callbacks
+//  * @param  UartHandle: UART handle
+//  * @note   This example shows a simple way to report transfer error, and you can
+//  *         add your own implementation.
+//  * @retval None
+//  */
+//void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+//{
+//    while(1);
+//}
 
 }
 
