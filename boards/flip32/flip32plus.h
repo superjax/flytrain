@@ -44,6 +44,24 @@
 #include "led.h"
 #include "serialport.h"
 
+
+//=================================================================================
+// DMA Mapping for STM32F1
+
+//                                                         DMA1
+// Channel  |       1       |       2       |       3       |       4       |       5       |       6       |       7       |
+// ADC      |      ADC1     |               |               |               |               |               |               |
+// SPI/I2S  |               |   SPI1_RX     |   SPI1_TX     |   SPI2/I2S_RX |   SPI2/I2S_TX |               |               |
+// USART    |               |   USART3_TX   |   USART3_RX   |   USART1_TX   |   USART1_RX   |   USART2_RX   |   USART2_TX   |
+// I2C      |               |               |               |   I2C2_TX     |   I2C2_RX     |   I2C1_TX     |   I2C2_RX     |
+
+//                                                         DMA2
+// Channel  |       1        |       2       |       3      |       4       |       5       |
+// ADC      |                |               |              |               |   ADC3        |
+// SPI/I2S  |   SPI3/I2S_RX  |  SPI3/I2S_TX  |              |               |               |
+// UART     |                |               |  UART4_RX    |               |   UART4_TX    |
+
+
 //#ifdef __cplusplus
 //extern "C" {
 //#endif

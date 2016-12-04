@@ -51,15 +51,6 @@ void hardware_init()
 
     LED1.init(LED1_GPIO_PORT, LED1_PIN);
     LED2.init(LED2_GPIO_PORT, LED2_PIN);
-
-   // USART1 Initialization
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    __HAL_RCC_USART1_CLK_ENABLE();
-
-    /*##-3- Configure the NVIC for UART ########################################*/
-    /* NVIC for USART */
-//    HAL_NVIC_SetPriority(USART1_IRQn, 0, 1);
-//    HAL_NVIC_EnableIRQ(USART1_IRQn);
 }
 
 uint32_t millis()

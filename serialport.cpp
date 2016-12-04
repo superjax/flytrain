@@ -116,6 +116,9 @@ void SerialPort::error_CB()
 
 //===============================================================================
 // C to C++ Wrappers
+// You can't call a class member function from within C, so I have to make
+// These simple wrappers to transfer the Interrupt from the C IRQ to the
+// class callback member
 void tx_complete_IRQ(UART_HandleTypeDef* huart)
 {
     if(huart == &UART1.UartHandle_)
