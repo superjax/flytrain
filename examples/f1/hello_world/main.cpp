@@ -21,9 +21,6 @@
  * SOFTWARE.
  */
 
-#define USE_FULL_ASSERT
-
-//#include "stm32f1xx_hal.h"
 #include "flip32plus.h"
 
 SerialPort uart1(1);
