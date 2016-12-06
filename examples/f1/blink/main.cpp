@@ -21,21 +21,16 @@
  * SOFTWARE.
  */
 
-#define USE_FULL_ASSERT
-
-//#include "stm32f1xx_hal.h"
 #include "flip32plus.h"
 
 int main(void)
 {
+    // LEDs are initialized in hardware init
+    // So is the clock
     hardware_init();
-
-    LED1.init(LED1_GPIO_PORT, LED1_PIN);
-    LED2.init(LED2_GPIO_PORT, LED2_PIN);
 
     // Toggle LED1 so they will alternate
     LED1.toggle();
-
 
     while (1)
     {

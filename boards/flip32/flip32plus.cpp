@@ -1,6 +1,6 @@
 #include "flip32plus.h"
 
-static uint32_t num_ticks;
+//static uint32_t HAL_GetTick();
 
 void start_wall_clock(void)
 {
@@ -55,7 +55,7 @@ void hardware_init()
 
 uint32_t millis()
 {
-    uint32_t out = num_ticks;
+    uint32_t out = HAL_GetTick();
     return out;
 }
 
@@ -64,9 +64,9 @@ uint64_t micros()
     static uint32_t clock_MHz = HAL_RCC_GetHCLKFreq()/1000000;
     uint32_t ticks, cycles;
     do {
-        ticks = num_ticks;
+        ticks = HAL_GetTick();
         cycles = SysTick->LOAD - SysTick->VAL;
-    } while(ticks != num_ticks); // We might have had a SysTick interrupt while we were loading the tick registers.  If so, do it again
+    } while(ticks != HAL_GetTick()); // We might have had a SysTick interrupt while we were loading the tick registers.  If so, do it again
 
     return (uint64_t)ticks * 1000 + cycles/clock_MHz;
 }
@@ -91,7 +91,7 @@ void delay_us(uint64_t us)
 
 extern "C" void SysTick_Handler(void)
 {
-  num_ticks++;
+  HAL_IncTick();
 }
 
 
