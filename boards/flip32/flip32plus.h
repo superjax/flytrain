@@ -40,9 +40,16 @@
 
 #include <stdint.h>
 
-// HIGH-LEVEL DRIVER INCLUDES (C++)
+// C includes
+extern "C" {
+#include "stm32f1xx_hal.h"
+#include "printf.h"
+}
+
+// C++ Includes
 #include "led.h"
 #include "serialport.h"
+
 
 
 //=================================================================================
@@ -230,7 +237,6 @@ uint64_t micros(void);
 void delay_ms(uint32_t ms);
 void delay_us(uint64_t us);
 
-#include "stm32f1xx_hal.h"
 
 /**
   * @}

@@ -201,7 +201,18 @@ HAL_StatusTypeDef SerialPort::write(uint8_t *buffer, uint32_t len)
 
 HAL_StatusTypeDef SerialPort::read(uint8_t *buffer, uint32_t len)
 {
-    return HAL_UART_Receive(&UartHandle_, buffer, len, 0x1FFFF);
+    if(mode_ == MODE_DMA)
+    {
+        return HAL_UART_Receive_DMA(&UartHandle_, buffer, len);
+    }
+    else if(mode_ == MODE_INTERRUPT)
+    {
+        return HAL_UART_Receive_IT(&UartHandle_, buffer, len);
+    }
+    else
+    {
+        return HAL_UART_Receive(&UartHandle_, buffer, len, 20);
+    }
 }
 
 bool SerialPort::busy()

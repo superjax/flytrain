@@ -94,7 +94,8 @@ BOARD_SRC = $(BOARD_DIR)/stm32f1xx_it.c \
 
 CSOURCES =  $(CMSIS_SRC) \
 	    $(HAL_SRC) \
-	    $(BOARD_SRC)
+            $(BOARD_SRC) \
+            $(COMMON_DIR)/printf.c
 
 CXXSOURCES = $(ROOT)/main.cpp \
 	     $(BOARD_DIR)/flip32plus.cpp \

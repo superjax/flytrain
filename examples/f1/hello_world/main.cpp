@@ -26,24 +26,28 @@
 //#include "stm32f1xx_hal.h"
 #include "flip32plus.h"
 
+SerialPort uart1(1);
+
+static void _putc(void *p, char c)
+{
+    (void)p; // avoid compiler warning about unused variable
+    uart1.write((uint8_t*)&c, 1);
+}
+
 int main(void)
 {
     // Initializes LEDs and starts the wall clock
     hardware_init();
 
-    SerialPort uart1(1);
-    uart1.init(921600, MODE_INTERRUPT);
+    uart1.init(9600, MODE_INTERRUPT);
+    init_printf(NULL, _putc);
 
     // Toggle LED1 so they will alternate
     LED1.toggle();
 
-
     while (1)
     {
-        char* test1 = "hello ";
-        char* test2 = "world\n";
-        uart1.write((uint8_t*)test1, 6);
-        uart1.write((uint8_t*)test2, 6);
+        printf("hello_world\n");
         LED1.toggle();
         delay_ms(100);
         LED2.toggle();
